@@ -85,7 +85,7 @@ public_users.get('/title/:title', async function (req, res) {
                 if (book.title === title) {
                     booksByTitle.push(book);
                 }
-            }
+            } 
         })();
 
         if (booksByTitle.length > 0) {
