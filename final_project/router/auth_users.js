@@ -58,7 +58,7 @@ regd_users.post("/login", (req, res) => {
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(200).send(JSON.stringify({ message: "User successfully logged in"}) + "\n" + accessToken + "\n");
+        return res.status(200).send(JSON.stringify({ message: "User successfully logged in"}) + "\n");
     } else {
         return res.status(208).send(JSON.stringify({ message: "Invalid Login. Check username and password" }) + "\n");
     }
@@ -71,18 +71,43 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     let book = books[isbn];  // Retrieve book object associated with isbn
 
     if (book) {  // Check if book exists
-        const review = req.params.review;
-        const user = req.user;
+        const review = req.query.review;
+        const user = req.session.authorization["username"];
         let entry = book.reviews[user];
-
-        book.reviews[user] = review;
 
         // Update review if provided in request body
         if (entry) {
-            res.send(`Review for book with the isbn ${isbn} updated.\n`);
+            book.reviews[user] = review;
+            res.send(`Review ${review} by ${user} for book ` + JSON.stringify(book) + ` with the isbn ${isbn} updated.\n`);
         }
         else {
-            res.send(`Review for book with the isbn ${isbn} created.\n`);
+            book["reviews"] = new Map();
+            book["reviews"][user] = review;
+            res.send(`Review ${review} by ${user} for book ` + JSON.stringify(book) + ` with the isbn ${isbn} created.\n`);
+        }
+    } else {
+        // Respond if book with specified isbn is not found
+        res.send("Unable to find book!\n");
+    }
+});
+
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    // Extract review parameter from request URL
+    const isbn = req.params.isbn;
+    let book = books[isbn];  // Retrieve book object associated with isbn
+
+    if (book) {  // Check if book exists
+        const user = req.session.authorization["username"];
+        let entry = book.reviews[user];
+
+        // Update review if provided in request body
+        if (entry) {
+            delete book.reviews[user];
+            res.send(`Review ${entry} by ${user} for book ` + JSON.stringify(book) + ` with the isbn ${isbn} deleted.\n`);
+        }
+        else {
+            res.send(`No review by ${user} for book ` + JSON.stringify(book) + ` was found.\n`);
         }
     } else {
         // Respond if book with specified isbn is not found
