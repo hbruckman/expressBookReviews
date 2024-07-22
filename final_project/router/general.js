@@ -5,8 +5,10 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 public_users.post("/register", (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+    // const username = req.body.username;
+    // const password = req.body.password;
+    const username = req.query.username;
+    const password = req.query.password;
     // Check if both username and password are provided
     if (username && password) {
         // Check if the user does not already exist

@@ -52,13 +52,13 @@ regd_users.post("/login", (req, res) => {
         // Generate JWT access token
         let accessToken = jwt.sign({
             data: password
-        }, 'access', { expiresIn: 60 * 60 });
+        }, 'access', { expiresIn: 60 * 60 * 24 });
 
         // Store access token and username in session
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(200).send("User successfully logged in\n");
+        return res.status(200).send(JSON.stringify({ message: "User successfully logged in"}) + "\n" + accessToken + "\n");
     } else {
         return res.status(208).send(JSON.stringify({ message: "Invalid Login. Check username and password" }) + "\n");
     }
@@ -67,6 +67,7 @@ regd_users.post("/login", (req, res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     // Extract review parameter from request URL
+    const isbn = req.params.isbn;
     let book = books[isbn];  // Retrieve book object associated with isbn
 
     if (book) {  // Check if book exists
@@ -74,13 +75,13 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
         const user = req.user;
         let entry = book.reviews[user];
 
+        book.reviews[user] = review;
+
         // Update review if provided in request body
         if (entry) {
-            book.reviews[user] = review;
             res.send(`Review for book with the isbn ${isbn} updated.\n`);
         }
         else {
-            book.reviews.push({user: review});
             res.send(`Review for book with the isbn ${isbn} created.\n`);
         }
     } else {
