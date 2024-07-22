@@ -67,28 +67,26 @@ regd_users.post("/login", (req, res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     // Extract review parameter from request URL
-    const review = req.params.review;
     let book = books[isbn];  // Retrieve book object associated with isbn
 
     if (book) {  // Check if book exists
-        let DOB = req.body.DOB;
-        // Add similarly for firstName
-        // Add similarly for lastName
+        const review = req.params.review;
+        const user = req.user;
+        let entry = book.reviews[user];
 
-        // Update DOB if provided in request body
-        if (DOB) {
-            friend["DOB"] = DOB;
+        // Update review if provided in request body
+        if (entry) {
+            book.reviews[user] = review;
+            res.send(`Review for book with the isbn ${isbn} updated.\n`);
         }
-        // Add similarly for firstName
-        // Add similarly for lastName
-
-        friends[email] = friend;  // Update friend details in 'friends' object
-        res.send(`Friend with the email ${email} updated.`);
+        else {
+            book.reviews.push({user: review});
+            res.send(`Review for book with the isbn ${isbn} created.\n`);
+        }
     } else {
-        // Respond if friend with specified email is not found
-        res.send("Unable to find friend!");
+        // Respond if book with specified isbn is not found
+        res.send("Unable to find book!\n");
     }
-});
 });
 
 module.exports.authenticated = regd_users;
